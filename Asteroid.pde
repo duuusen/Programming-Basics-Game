@@ -31,7 +31,7 @@ class Asteroid {
     if (location.x+radius < 0) {
       location.x = random(width+50,width+150);
       location.y = random(height);
-      velocity.mult(0.5); // Slows the asteroids down
+      velocity.mult(random(0.1,1.2)); // randomizes the new velocity of the "new" asteroids
     }
   }
   void display() {
