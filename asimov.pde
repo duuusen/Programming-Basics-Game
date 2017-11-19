@@ -22,16 +22,16 @@ void setup() {
 }
 void draw() {
   switch(gameStatus) {
-case startScreen:
-  drawStartScreen();
-  break;
-case playingGame: // If we are in the game, draw the game, etc
-  drawGame();
-  break;
-case gameOver:
-  drawGameOverScreen();
-  break;
-}
+    case startScreen:
+      drawStartScreen();
+    break;
+    case playingGame: // If we are in the game, draw the game, etc
+      drawGame();
+    break;
+    case gameOver:
+      drawGameOverScreen();
+    break;
+  }
 }
 void gameSetup() {
   ship = new Ship();
@@ -79,9 +79,9 @@ void drawGame() {
   // Asteroids
   for (Asteroid a: asteroids) {
     PVector attractionForce = ship.attract(a);
-    PVector force = new PVector(-1.5,0);
+    PVector acceleration = new PVector(-1.5,0);
     a.run();
-    a.applyForce(force);
+    a.applyForce(acceleration);
     a.applyForce(attractionForce);
   }
   // Star Parallax
@@ -100,6 +100,16 @@ void drawGame() {
     if (keyRight) {
       PVector forward = new PVector(15,0);
       s.parallax(forward);
+    }
+  }
+  checkCollision();
+}
+void checkCollision() {
+  for (int i = 0; i < asteroids.size(); i++) {
+    Asteroid object1  = asteroids.get(i);
+    // check asteroid against ship
+    if (object1.checkCollision(ship)) {
+      gameStatus = gameOver;
     }
   }
 }

@@ -4,6 +4,7 @@ class Ship {
   PVector acceleration;
   PVector pullBack;
   int screenLimit;
+  float radius;
   float damper;
   float mass;
   float g;
@@ -14,6 +15,7 @@ class Ship {
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
     screenLimit = 30;
+    radius = 25;
     damper = 0.95;
     mass = 60;
     g = 0.4; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
@@ -64,9 +66,13 @@ class Ship {
 
     return force;
   }
+  void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 100, 100);
+  }
   void display() {
     stroke(0);
     fill(175,70);
-    rect(location.x,location.y,50,50);
+    rect(location.x,location.y,radius*2,radius*2);
   }
 }

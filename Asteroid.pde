@@ -34,6 +34,21 @@ class Asteroid {
       velocity.mult(random(0.1,1.2)); // randomizes the new velocity of the "new" asteroids
     }
   }
+  void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 60, 60); // ellipse slightly bigger than asteroid itself
+  }
+  boolean checkCollision(Ship ship) {
+    // Circle Collision Detection
+    float distance = dist(location.x, location.y, ship.x(), ship.y());
+    if (distance < radius + ship.radius) {
+      this.collision(); // calls the local collision function (void collision, line 33-35)
+      ship.collision(); // calls the collision on that other object
+      return true;
+    } else {
+      return false;
+    }
+  }
   void display() {
     fill(255);
     ellipse(location.x,location.y,2*radius,2*radius);

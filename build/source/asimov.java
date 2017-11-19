@@ -38,16 +38,16 @@ public void setup() {
 }
 public void draw() {
   switch(gameStatus) {
-case startScreen:
-  drawStartScreen();
-  break;
-case playingGame: // If we are in the game, draw the game, etc
-  drawGame();
-  break;
-case gameOver:
-  drawGameOverScreen();
-  break;
-}
+    case startScreen:
+      drawStartScreen();
+    break;
+    case playingGame: // If we are in the game, draw the game, etc
+      drawGame();
+    break;
+    case gameOver:
+      drawGameOverScreen();
+    break;
+  }
 }
 public void gameSetup() {
   ship = new Ship();
@@ -95,9 +95,9 @@ public void drawGame() {
   // Asteroids
   for (Asteroid a: asteroids) {
     PVector attractionForce = ship.attract(a);
-    PVector force = new PVector(-1.5f,0);
+    PVector acceleration = new PVector(-1.5f,0);
     a.run();
-    a.applyForce(force);
+    a.applyForce(acceleration);
     a.applyForce(attractionForce);
   }
   // Star Parallax
@@ -116,6 +116,16 @@ public void drawGame() {
     if (keyRight) {
       PVector forward = new PVector(15,0);
       s.parallax(forward);
+    }
+  }
+  checkCollision();
+}
+public void checkCollision() {
+  for (int i = 0; i < asteroids.size(); i++) {
+    Asteroid object1  = asteroids.get(i);
+    // check asteroid against ship
+    if (object1.checkCollision(ship)) {
+      gameStatus = gameOver;
     }
   }
 }
@@ -184,6 +194,21 @@ class Asteroid {
       velocity.mult(random(0.1f,1.2f)); // randomizes the new velocity of the "new" asteroids
     }
   }
+  public void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 60, 60); // ellipse slightly bigger than asteroid itself
+  }
+  public boolean checkCollision(Ship ship) {
+    // Circle Collision Detection
+    float distance = dist(location.x, location.y, ship.x(), ship.y());
+    if (distance < radius + ship.radius) {
+      this.collision(); // calls the local collision function (void collision, line 33-35)
+      ship.collision(); // calls the collision on that other object
+      return true;
+    } else {
+      return false;
+    }
+  }
   public void display() {
     fill(255);
     ellipse(location.x,location.y,2*radius,2*radius);
@@ -195,6 +220,7 @@ class Ship {
   PVector acceleration;
   PVector pullBack;
   int screenLimit;
+  float radius;
   float damper;
   float mass;
   float g;
@@ -205,6 +231,7 @@ class Ship {
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
     screenLimit = 30;
+    radius = 25;
     damper = 0.95f;
     mass = 60;
     g = 0.4f; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
@@ -255,10 +282,14 @@ class Ship {
 
     return force;
   }
+  public void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 100, 100);
+  }
   public void display() {
     stroke(0);
     fill(175,70);
-    rect(location.x,location.y,50,50);
+    rect(location.x,location.y,radius*2,radius*2);
   }
 }
 // Based on William Smith's "Parallax"
