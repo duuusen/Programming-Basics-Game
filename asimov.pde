@@ -79,9 +79,9 @@ void drawGame() {
   // Asteroids
   for (Asteroid a: asteroids) {
     PVector attractionForce = ship.attract(a);
-    PVector force = new PVector(-1.5,0);
+    PVector acceleration = new PVector(-1.5,0);
     a.run();
-    a.applyForce(force);
+    a.applyForce(acceleration);
     a.applyForce(attractionForce);
   }
   // Star Parallax
