@@ -24,13 +24,30 @@ boolean keyRight = false;
 boolean keyUp = false;
 boolean keyDown = false;
 
+int gameStatus = 0; // The integer stores status of the screen
+
+// game constants
+final int startScreen = 0;
+final int playingGame = 1;
+final int gameOver = 2;
+
 public void setup() {
   
   
   gameSetup();
 }
 public void draw() {
+  switch(gameStatus) {
+case startScreen:
+  drawStartScreen();
+  break;
+case playingGame: // If we are in the game, draw the game, etc
   drawGame();
+  break;
+case gameOver:
+  drawGameOverScreen();
+  break;
+}
 }
 public void gameSetup() {
   ship = new Ship();
@@ -39,9 +56,24 @@ public void gameSetup() {
     stars.add(new Star());
   }
   for (int i = 0; i < 6; i++) {
-    PVector asteroidLocation = new PVector(random(width+50,width+150),random(height)); // Initialize asteroids outside the screen and let them fly in
+    PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
   }
+}
+public void drawStartScreen() {
+  background(0);
+  textAlign(CENTER);
+  textSize(40);
+  fill(255);
+  text("ASIMOV\nPRESS ENTER TO START", width/2, height/2);
+}
+
+public void drawGameOverScreen() {
+  background(0);
+  textAlign(CENTER);
+  textSize(40);
+  fill(255);
+  text("GAME OVER\nPRESS ENTER TO RESTART", width/2, height/2);
 }
 public void drawGame() {
   background(0);
@@ -98,19 +130,12 @@ public void keyPressed() {
   if (keyCode == RIGHT || key == 'D'|| key== 'd') {
     keyRight = true;
   }
-  // if (key == ' ' && gameStatus == playingGame && shootLimit == false) { // space key for shooting, just during gameplay
-  //   myShip.shoot();
-  //   shootLimit = true; // we are allowed to shoot
-  // }
-  // if (key == ENTER) {
-  //   if (gameStatus != playingGame) {
-  //     setupGame();
-  //     gameStatus = playingGame;
-  //   }
-  // }
-  // if (key == ' ' && gameStatus == playingGame) {
-  //   shootLimit = false;
-  // }
+  if (key == ENTER) {
+    if (gameStatus != playingGame) {
+      gameSetup();
+      gameStatus = playingGame;
+    }
+  }
 }
 public void keyReleased() { // without this, the ship only moves one time the key is pressed
   if (keyCode == UP || key == 'W'|| key == 'w') {
@@ -154,7 +179,7 @@ class Asteroid {
   }
   public void checkEdges() {
     if (location.x+radius < 0) {
-      location.x = random(width+50,width+150);
+      location.x = random(width+50,width+500);
       location.y = random(height);
       velocity.mult(random(0.1f,1.2f)); // randomizes the new velocity of the "new" asteroids
     }
@@ -182,7 +207,7 @@ class Ship {
     screenLimit = 30;
     damper = 0.95f;
     mass = 60;
-    g = 0.4f; // Gravitational constant 'g'
+    g = 0.4f; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
   }
   public void run() {
     update();
@@ -220,11 +245,11 @@ class Ship {
     }
   }
   public PVector attract(Asteroid a) {
-    PVector force = PVector.sub(location,a.location); // substracting the attractor location and the location of the mover gives us the direction PVector
+    PVector force = PVector.sub(location,a.location); // substracting the ship location and the location of the asteroids gives us the direction PVector
     float distance = force.mag(); // this gives us the magnitude (distance) of the two objects
     distance = constrain(distance,5.0f,25.0f); // constrain because when the objects are very close, we could actually divide by 0. Also constrain the maximum, because we want realistic looking attraction. Otherwise, the objects could be so far away, that the attraction force is too small and they don't attract each other anymore
 
-    force.normalize(); // normaliye the direction vector, so that we can apply strength to it by multiplicating the direction vector with strength
+    force.normalize(); // normalize the direction vector, so that we can apply strength to it by multiplicating the direction vector with strength
     float strength = (g * mass * a.mass) / (distance * distance); // formula for the strength
     force.mult(strength);
 

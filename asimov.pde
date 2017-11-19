@@ -8,13 +8,30 @@ boolean keyRight = false;
 boolean keyUp = false;
 boolean keyDown = false;
 
+int gameStatus = 0; // The integer stores status of the screen
+
+// game constants
+final int startScreen = 0;
+final int playingGame = 1;
+final int gameOver = 2;
+
 void setup() {
   size(1200,700);
   smooth();
   gameSetup();
 }
 void draw() {
+  switch(gameStatus) {
+case startScreen:
+  drawStartScreen();
+  break;
+case playingGame: // If we are in the game, draw the game, etc
   drawGame();
+  break;
+case gameOver:
+  drawGameOverScreen();
+  break;
+}
 }
 void gameSetup() {
   ship = new Ship();
@@ -23,9 +40,24 @@ void gameSetup() {
     stars.add(new Star());
   }
   for (int i = 0; i < 6; i++) {
-    PVector asteroidLocation = new PVector(random(width+50,width+150),random(height)); // Initialize asteroids outside the screen and let them fly in
+    PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
   }
+}
+void drawStartScreen() {
+  background(0);
+  textAlign(CENTER);
+  textSize(40);
+  fill(255);
+  text("ASIMOV\nPRESS ENTER TO START", width/2, height/2);
+}
+
+void drawGameOverScreen() {
+  background(0);
+  textAlign(CENTER);
+  textSize(40);
+  fill(255);
+  text("GAME OVER\nPRESS ENTER TO RESTART", width/2, height/2);
 }
 void drawGame() {
   background(0);
@@ -82,19 +114,12 @@ void keyPressed() {
   if (keyCode == RIGHT || key == 'D'|| key== 'd') {
     keyRight = true;
   }
-  // if (key == ' ' && gameStatus == playingGame && shootLimit == false) { // space key for shooting, just during gameplay
-  //   myShip.shoot();
-  //   shootLimit = true; // we are allowed to shoot
-  // }
-  // if (key == ENTER) {
-  //   if (gameStatus != playingGame) {
-  //     setupGame();
-  //     gameStatus = playingGame;
-  //   }
-  // }
-  // if (key == ' ' && gameStatus == playingGame) {
-  //   shootLimit = false;
-  // }
+  if (key == ENTER) {
+    if (gameStatus != playingGame) {
+      gameSetup();
+      gameStatus = playingGame;
+    }
+  }
 }
 void keyReleased() { // without this, the ship only moves one time the key is pressed
   if (keyCode == UP || key == 'W'|| key == 'w') {

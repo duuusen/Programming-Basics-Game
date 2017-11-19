@@ -16,7 +16,7 @@ class Ship {
     screenLimit = 30;
     damper = 0.95;
     mass = 60;
-    g = 0.4; // Gravitational constant 'g'
+    g = 0.4; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
   }
   void run() {
     update();
@@ -54,11 +54,11 @@ class Ship {
     }
   }
   PVector attract(Asteroid a) {
-    PVector force = PVector.sub(location,a.location); // substracting the attractor location and the location of the mover gives us the direction PVector
+    PVector force = PVector.sub(location,a.location); // substracting the ship location and the location of the asteroids gives us the direction PVector
     float distance = force.mag(); // this gives us the magnitude (distance) of the two objects
     distance = constrain(distance,5.0,25.0); // constrain because when the objects are very close, we could actually divide by 0. Also constrain the maximum, because we want realistic looking attraction. Otherwise, the objects could be so far away, that the attraction force is too small and they don't attract each other anymore
 
-    force.normalize(); // normaliye the direction vector, so that we can apply strength to it by multiplicating the direction vector with strength
+    force.normalize(); // normalize the direction vector, so that we can apply strength to it by multiplicating the direction vector with strength
     float strength = (g * mass * a.mass) / (distance * distance); // formula for the strength
     force.mult(strength);
 

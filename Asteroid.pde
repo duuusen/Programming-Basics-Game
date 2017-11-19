@@ -29,7 +29,7 @@ class Asteroid {
   }
   void checkEdges() {
     if (location.x+radius < 0) {
-      location.x = random(width+50,width+150);
+      location.x = random(width+50,width+500);
       location.y = random(height);
       velocity.mult(random(0.1,1.2)); // randomizes the new velocity of the "new" asteroids
     }
