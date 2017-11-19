@@ -106,9 +106,9 @@ void drawGame() {
 }
 void checkCollision() {
   for (int i = 0; i < asteroids.size(); i++) {
-    Asteroid object1  = asteroids.get(i);
+    Asteroid asteroidObject  = asteroids.get(i);
     // check asteroid against ship
-    if (object1.checkCollision(ship)) {
+    if (asteroidObject.checkCollision(ship)) {
       gameStatus = gameOver;
     }
   }

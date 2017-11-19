@@ -28,7 +28,7 @@ class Asteroid {
     println(velocity);
   }
   void checkEdges() {
-    if (location.x+radius < 0) {
+    if (location.x + radius < 0) {
       location.x = random(width+50,width+500);
       location.y = random(height);
       velocity.mult(random(0.1,1.2)); // randomizes the new velocity of the "new" asteroids
@@ -40,7 +40,7 @@ class Asteroid {
   }
   boolean checkCollision(Ship ship) {
     // Circle Collision Detection
-    float distance = dist(location.x, location.y, ship.x(), ship.y());
+    float distance = dist(location.x, location.y, ship.location.x, ship.location.y);
     if (distance < radius + ship.radius) {
       this.collision(); // calls the local collision function (void collision, line 33-35)
       ship.collision(); // calls the collision on that other object
