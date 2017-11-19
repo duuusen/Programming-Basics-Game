@@ -25,7 +25,7 @@ class Asteroid {
     velocity.add(acceleration);
     location.add(velocity);
     acceleration.mult(0); // Resetting acceleration, very important!!!111!11!1!
-    println(velocity);
+    // println(velocity);
   }
   void checkEdges() {
     if (location.x + radius < 0) {

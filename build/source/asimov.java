@@ -55,8 +55,8 @@ public void draw() {
 }
 public void gameSetup() {
   ship = new Ship(new PVector(width/10, height/2));
-  // Initialize stars and asteroids
-  asteroids = new ArrayList<Asteroid>();
+  // Initialize asteroids
+  asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
@@ -67,7 +67,10 @@ public void drawStartScreen() {
   textAlign(CENTER);
   textSize(40);
   fill(255);
-  text("ASIMOV\nPRESS ENTER TO START", width/2, height/2);
+  textSize(72);
+  text("ASIMOV\n", width/2, height/2);
+  textSize(46);
+  text("PRESS ENTER TO START",width/2,height/1.5f);
 }
 
 public void drawGameOverScreen() {
@@ -75,13 +78,14 @@ public void drawGameOverScreen() {
   textAlign(CENTER);
   textSize(40);
   fill(255);
+  textLeading(160);
   text("GAME OVER\nPRESS ENTER TO RESTART", width/2, height/2);
 }
 public void drawGame() {
   background(0);
   // Ship
   ship.run();
-  int shipAcceleration = 2;
+  float shipAcceleration = 0.5f;
   if (keyUp) { // Stuff like this has to be in this for loop, otherwise it won't work
     PVector up = new PVector(0,-shipAcceleration);
     ship.applyForce(up);
@@ -91,15 +95,14 @@ public void drawGame() {
     ship.applyForce(down);
   }
   if (keyRight) {
-    PVector forward = new PVector(shipAcceleration,0);
+    PVector forward = new PVector(shipAcceleration+1,0); // +1 because the forward force needs to be stronger than the pullBack force
     ship.applyForce(forward);
   }
   // Asteroids
   for (Asteroid a: asteroids) {
     PVector attractionForce = ship.attract(a);
-    PVector acceleration = new PVector(-1.5f,0);
+    PVector acceleration = new PVector(-0.3f,0);
     a.run();
-    a.display();
     a.applyForce(acceleration);
     a.applyForce(attractionForce);
   }
@@ -109,15 +112,15 @@ public void drawGame() {
     PVector standardAcc = new PVector(5,0);
     s.parallax(standardAcc);
     if (keyUp) { // Stuff like this has to be in this for loop, otherwise it won't work
-      PVector up = new PVector(0,-10);
+      PVector up = new PVector(0,-15);
       s.parallax(up);
     }
     if (keyDown) {
-      PVector down = new PVector(0,10);
+      PVector down = new PVector(0,15);
       s.parallax(down);
     }
     if (keyRight) {
-      PVector forward = new PVector(15,0);
+      PVector forward = new PVector(60,0);
       s.parallax(forward);
     }
   }
@@ -178,6 +181,7 @@ class Asteroid {
   public void run() {
     update();
     checkEdges();
+    display();
   }
   public void applyForce(PVector f) {
     PVector force = PVector.div(f, mass);
@@ -187,7 +191,7 @@ class Asteroid {
     velocity.add(acceleration);
     location.add(velocity);
     acceleration.mult(0); // Resetting acceleration, very important!!!111!11!1!
-    println(velocity);
+    // println(velocity);
   }
   public void checkEdges() {
     if (location.x + radius < 0) {
@@ -221,7 +225,6 @@ class Ship {
   PVector velocity;
   PVector acceleration;
   PVector pullBack;
-  int screenLimit;
   float radius;
   float damper;
   float mass;
@@ -232,7 +235,6 @@ class Ship {
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
-    screenLimit = 30;
     radius = 25;
     damper = 0.95f;
     mass = 60;
@@ -257,11 +259,11 @@ class Ship {
     if (location.x > width/2) {
       location.x = width/2;
     }
-    if (location.y < screenLimit) {
-      location.y = screenLimit;
+    if (location.y < radius) {
+      location.y = radius;
     }
-    if (location.y > height-screenLimit) {
-      location.y = height-screenLimit;
+    if (location.y > height-radius) {
+      location.y = height-radius;
     }
     // Setting the position to the point of origin
     if (location.x < width/10) {
@@ -291,6 +293,7 @@ class Ship {
   public void display() {
     stroke(0);
     fill(175,70);
+    rectMode(CENTER); // so that collision detection works properly, because it assumes that the rectangle is a ellipse for checking collision
     rect(location.x,location.y,radius*2,radius*2);
   }
 }
