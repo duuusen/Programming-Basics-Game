@@ -9,8 +9,8 @@ class Ship {
   float mass;
   float g;
 
-  Ship() {
-    location = new PVector(width/10, height/2);
+  Ship(PVector location_) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);

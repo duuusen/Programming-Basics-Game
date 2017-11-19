@@ -5,8 +5,8 @@ class Asteroid {
   float mass;
   float radius;
 
-  Asteroid(PVector asteroidLocation, float m) {
-    location = asteroidLocation;
+  Asteroid(PVector location_, float m) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     mass = m; // Order has to be right! The passed value is always on the right side of the equation.

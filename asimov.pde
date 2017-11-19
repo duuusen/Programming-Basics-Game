@@ -1,6 +1,6 @@
 Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
-ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
+ArrayList<Asteroid> asteroids;
 
 
 boolean keyLeft = false;
@@ -18,6 +18,10 @@ final int gameOver = 2;
 void setup() {
   size(1200,700);
   smooth();
+  // Setting up the stars once, they don't need to be reloaded like the gameSetup
+  for (int i = 0; i < width; i++) {
+    stars.add(new Star());
+  }
   gameSetup();
 }
 void draw() {
@@ -34,11 +38,9 @@ void draw() {
   }
 }
 void gameSetup() {
-  ship = new Ship();
+  ship = new Ship(new PVector(width/10, height/2));
   // Initialize stars and asteroids
-  for (int i = 0; i < width; i++) {
-    stars.add(new Star());
-  }
+  asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));

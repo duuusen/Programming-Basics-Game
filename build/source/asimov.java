@@ -16,7 +16,7 @@ public class asimov extends PApplet {
 
 Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
-ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
+ArrayList<Asteroid> asteroids;
 
 
 boolean keyLeft = false;
@@ -34,6 +34,10 @@ final int gameOver = 2;
 public void setup() {
   
   
+  // Setting up the stars once, they don't need to be reloaded like the gameSetup
+  for (int i = 0; i < width; i++) {
+    stars.add(new Star());
+  }
   gameSetup();
 }
 public void draw() {
@@ -50,11 +54,9 @@ public void draw() {
   }
 }
 public void gameSetup() {
-  ship = new Ship();
+  ship = new Ship(new PVector(width/10, height/2));
   // Initialize stars and asteroids
-  for (int i = 0; i < width; i++) {
-    stars.add(new Star());
-  }
+  asteroids = new ArrayList<Asteroid>();
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
@@ -97,6 +99,7 @@ public void drawGame() {
     PVector attractionForce = ship.attract(a);
     PVector acceleration = new PVector(-1.5f,0);
     a.run();
+    a.display();
     a.applyForce(acceleration);
     a.applyForce(attractionForce);
   }
@@ -165,8 +168,8 @@ class Asteroid {
   float mass;
   float radius;
 
-  Asteroid(PVector asteroidLocation, float m) {
-    location = asteroidLocation;
+  Asteroid(PVector location_, float m) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     mass = m; // Order has to be right! The passed value is always on the right side of the equation.
@@ -175,7 +178,6 @@ class Asteroid {
   public void run() {
     update();
     checkEdges();
-    display();
   }
   public void applyForce(PVector f) {
     PVector force = PVector.div(f, mass);
@@ -225,8 +227,8 @@ class Ship {
   float mass;
   float g;
 
-  Ship() {
-    location = new PVector(width/10, height/2);
+  Ship(PVector location_) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
