@@ -4,6 +4,7 @@ class Asteroid {
   PVector acceleration;
   float mass;
   float radius;
+  boolean offScreen = false;
 
   Asteroid(PVector asteroidLocation, float m) {
     location = asteroidLocation;
@@ -14,7 +15,6 @@ class Asteroid {
   }
   void run() {
     update();
-    checkEdges();
     display();
   }
   void applyForce(PVector f) {
@@ -25,13 +25,12 @@ class Asteroid {
     velocity.add(acceleration);
     location.add(velocity);
     acceleration.mult(0); // Resetting acceleration, very important!!!111!11!1!
-    println(velocity);
   }
-  void checkEdges() {
+  boolean offScreen() {
     if (location.x+radius < 0) {
-      location.x = random(width+50,width+150);
-      location.y = random(height);
-      velocity.mult(0.5); // Slows the asteroids down
+      return true;
+    } else {
+      return false;
     }
   }
   void display() {
