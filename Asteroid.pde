@@ -5,8 +5,8 @@ class Asteroid {
   float mass;
   float radius;
 
-  Asteroid(PVector asteroidLocation, float m) {
-    location = asteroidLocation;
+  Asteroid(PVector location_, float m) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     mass = m; // Order has to be right! The passed value is always on the right side of the equation.
@@ -25,13 +25,28 @@ class Asteroid {
     velocity.add(acceleration);
     location.add(velocity);
     acceleration.mult(0); // Resetting acceleration, very important!!!111!11!1!
-    println(velocity);
+    // println(velocity);
   }
   void checkEdges() {
-    if (location.x+radius < 0) {
+    if (location.x + radius < 0) {
       location.x = random(width+50,width+500);
       location.y = random(height);
       velocity.mult(random(0.1,1.2)); // randomizes the new velocity of the "new" asteroids
+    }
+  }
+  void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 60, 60); // ellipse slightly bigger than asteroid itself
+  }
+  boolean checkCollision(Ship ship) {
+    // Circle Collision Detection
+    float distance = dist(location.x, location.y, ship.location.x, ship.location.y);
+    if (distance < radius + ship.radius) {
+      this.collision(); // calls the local collision function (void collision, line 33-35)
+      ship.collision(); // calls the collision on that other object
+      return true;
+    } else {
+      return false;
     }
   }
   void display() {

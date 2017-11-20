@@ -3,17 +3,17 @@ class Ship {
   PVector velocity;
   PVector acceleration;
   PVector pullBack;
-  int screenLimit;
+  float radius;
   float damper;
   float mass;
   float g;
 
-  Ship() {
-    location = new PVector(width/10, height/2);
+  Ship(PVector location_) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
-    screenLimit = 30;
+    radius = 25;
     damper = 0.95;
     mass = 60;
     g = 0.4; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
@@ -37,11 +37,11 @@ class Ship {
     if (location.x > width/2) {
       location.x = width/2;
     }
-    if (location.y < screenLimit) {
-      location.y = screenLimit;
+    if (location.y < radius) {
+      location.y = radius;
     }
-    if (location.y > height-screenLimit) {
-      location.y = height-screenLimit;
+    if (location.y > height-radius) {
+      location.y = height-radius;
     }
     // Setting the position to the point of origin
     if (location.x < width/10) {
@@ -64,9 +64,14 @@ class Ship {
 
     return force;
   }
+  void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 100, 100);
+  }
   void display() {
     stroke(0);
     fill(175,70);
-    rect(location.x,location.y,50,50);
+    rectMode(CENTER); // so that collision detection works properly, because it assumes that the rectangle is a ellipse for checking collision
+    rect(location.x,location.y,radius*2,radius*2);
   }
 }

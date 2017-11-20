@@ -16,7 +16,7 @@ public class asimov extends PApplet {
 
 Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
-ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>();
+ArrayList<Asteroid> asteroids;
 
 
 boolean keyLeft = false;
@@ -34,27 +34,29 @@ final int gameOver = 2;
 public void setup() {
   
   
+  // Setting up the stars once, they don't need to be reloaded like the gameSetup
+  for (int i = 0; i < width; i++) {
+    stars.add(new Star());
+  }
   gameSetup();
 }
 public void draw() {
   switch(gameStatus) {
-case startScreen:
-  drawStartScreen();
-  break;
-case playingGame: // If we are in the game, draw the game, etc
-  drawGame();
-  break;
-case gameOver:
-  drawGameOverScreen();
-  break;
-}
+    case startScreen:
+      drawStartScreen();
+    break;
+    case playingGame: // If we are in the game, draw the game, etc
+      drawGame();
+    break;
+    case gameOver:
+      drawGameOverScreen();
+    break;
+  }
 }
 public void gameSetup() {
-  ship = new Ship();
-  // Initialize stars and asteroids
-  for (int i = 0; i < width; i++) {
-    stars.add(new Star());
-  }
+  ship = new Ship(new PVector(width/10, height/2));
+  // Initialize asteroids
+  asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
@@ -65,7 +67,10 @@ public void drawStartScreen() {
   textAlign(CENTER);
   textSize(40);
   fill(255);
-  text("ASIMOV\nPRESS ENTER TO START", width/2, height/2);
+  textSize(72);
+  text("ASIMOV\n", width/2, height/2);
+  textSize(46);
+  text("PRESS ENTER TO START",width/2,height/1.5f);
 }
 
 public void drawGameOverScreen() {
@@ -73,13 +78,14 @@ public void drawGameOverScreen() {
   textAlign(CENTER);
   textSize(40);
   fill(255);
+  textLeading(160);
   text("GAME OVER\nPRESS ENTER TO RESTART", width/2, height/2);
 }
 public void drawGame() {
   background(0);
   // Ship
   ship.run();
-  int shipAcceleration = 2;
+  float shipAcceleration = 0.5f;
   if (keyUp) { // Stuff like this has to be in this for loop, otherwise it won't work
     PVector up = new PVector(0,-shipAcceleration);
     ship.applyForce(up);
@@ -89,15 +95,15 @@ public void drawGame() {
     ship.applyForce(down);
   }
   if (keyRight) {
-    PVector forward = new PVector(shipAcceleration,0);
+    PVector forward = new PVector(shipAcceleration+1,0); // +1 because the forward force needs to be stronger than the pullBack force
     ship.applyForce(forward);
   }
   // Asteroids
   for (Asteroid a: asteroids) {
     PVector attractionForce = ship.attract(a);
-    PVector force = new PVector(-1.5f,0);
+    PVector acceleration = new PVector(-0.3f,0);
     a.run();
-    a.applyForce(force);
+    a.applyForce(acceleration);
     a.applyForce(attractionForce);
   }
   // Star Parallax
@@ -106,16 +112,26 @@ public void drawGame() {
     PVector standardAcc = new PVector(5,0);
     s.parallax(standardAcc);
     if (keyUp) { // Stuff like this has to be in this for loop, otherwise it won't work
-      PVector up = new PVector(0,-10);
+      PVector up = new PVector(0,-15);
       s.parallax(up);
     }
     if (keyDown) {
-      PVector down = new PVector(0,10);
+      PVector down = new PVector(0,15);
       s.parallax(down);
     }
     if (keyRight) {
-      PVector forward = new PVector(15,0);
+      PVector forward = new PVector(60,0);
       s.parallax(forward);
+    }
+  }
+  checkCollision();
+}
+public void checkCollision() {
+  for (int i = 0; i < asteroids.size(); i++) {
+    Asteroid asteroidObject  = asteroids.get(i);
+    // check asteroid against ship
+    if (asteroidObject.checkCollision(ship)) {
+      gameStatus = gameOver;
     }
   }
 }
@@ -155,8 +171,8 @@ class Asteroid {
   float mass;
   float radius;
 
-  Asteroid(PVector asteroidLocation, float m) {
-    location = asteroidLocation;
+  Asteroid(PVector location_, float m) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     mass = m; // Order has to be right! The passed value is always on the right side of the equation.
@@ -175,13 +191,28 @@ class Asteroid {
     velocity.add(acceleration);
     location.add(velocity);
     acceleration.mult(0); // Resetting acceleration, very important!!!111!11!1!
-    println(velocity);
+    // println(velocity);
   }
   public void checkEdges() {
-    if (location.x+radius < 0) {
+    if (location.x + radius < 0) {
       location.x = random(width+50,width+500);
       location.y = random(height);
       velocity.mult(random(0.1f,1.2f)); // randomizes the new velocity of the "new" asteroids
+    }
+  }
+  public void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 60, 60); // ellipse slightly bigger than asteroid itself
+  }
+  public boolean checkCollision(Ship ship) {
+    // Circle Collision Detection
+    float distance = dist(location.x, location.y, ship.location.x, ship.location.y);
+    if (distance < radius + ship.radius) {
+      this.collision(); // calls the local collision function (void collision, line 33-35)
+      ship.collision(); // calls the collision on that other object
+      return true;
+    } else {
+      return false;
     }
   }
   public void display() {
@@ -194,17 +225,17 @@ class Ship {
   PVector velocity;
   PVector acceleration;
   PVector pullBack;
-  int screenLimit;
+  float radius;
   float damper;
   float mass;
   float g;
 
-  Ship() {
-    location = new PVector(width/10, height/2);
+  Ship(PVector location_) {
+    location = location_;
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
-    screenLimit = 30;
+    radius = 25;
     damper = 0.95f;
     mass = 60;
     g = 0.4f; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
@@ -228,11 +259,11 @@ class Ship {
     if (location.x > width/2) {
       location.x = width/2;
     }
-    if (location.y < screenLimit) {
-      location.y = screenLimit;
+    if (location.y < radius) {
+      location.y = radius;
     }
-    if (location.y > height-screenLimit) {
-      location.y = height-screenLimit;
+    if (location.y > height-radius) {
+      location.y = height-radius;
     }
     // Setting the position to the point of origin
     if (location.x < width/10) {
@@ -255,10 +286,15 @@ class Ship {
 
     return force;
   }
+  public void collision() {
+    fill(255,0,0);
+    ellipse(location.x, location.y, 100, 100);
+  }
   public void display() {
     stroke(0);
     fill(175,70);
-    rect(location.x,location.y,50,50);
+    rectMode(CENTER); // so that collision detection works properly, because it assumes that the rectangle is a ellipse for checking collision
+    rect(location.x,location.y,radius*2,radius*2);
   }
 }
 // Based on William Smith's "Parallax"
