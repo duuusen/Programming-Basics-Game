@@ -1,9 +1,6 @@
 class Asteroid {
-  PVector location;
-  PVector velocity;
-  PVector acceleration;
-  float mass;
-  float radius;
+  PVector location, velocity, acceleration;
+  float mass, radius;
 
   Asteroid(PVector location_, float m) {
     location = location_;

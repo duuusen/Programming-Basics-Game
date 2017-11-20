@@ -1,12 +1,6 @@
 class Ship {
-  PVector location;
-  PVector velocity;
-  PVector acceleration;
-  PVector pullBack;
-  float radius;
-  float damper;
-  float mass;
-  float g;
+  PVector location, velocity, acceleration, pullBack;
+  float radius, damper, mass, g;
 
   Ship(PVector location_) {
     location = location_;

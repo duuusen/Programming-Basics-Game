@@ -1,8 +1,6 @@
 // Based on William Smith's "Parallax"
 class Star {
-  PVector origin;
-  PVector location;
-  PVector angle;
+  PVector origin, location, angle;
   float size;
   color c;
 

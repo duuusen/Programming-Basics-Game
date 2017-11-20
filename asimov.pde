@@ -1,3 +1,5 @@
+Table table;
+String file = "highscore.csv";
 Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Asteroid> asteroids;
@@ -18,6 +20,13 @@ final int gameOver = 2;
 void setup() {
   size(1200,700);
   smooth();
+  // Setting up highscore textfile
+  table = loadTable("data/"+file, "header");
+  if (table == null) {
+    makeFile(); // if there is no file yet, create a new one
+  } else {
+    retrieveDate();
+  }
   // Setting up the stars once, they don't need to be reloaded like the gameSetup
   for (int i = 0; i < width; i++) {
     stars.add(new Star());
@@ -147,4 +156,34 @@ void keyReleased() { // without this, the ship only moves one time the key is pr
   if (keyCode == RIGHT || key == 'D'|| key == 'd') {
     keyRight = false;
   }
+}
+void saveDate() {
+  // save a new score into the csv file
+  TableRow newRow = table.addRow();
+  newRow.setString("Name", "Luke_"+floor(random(0, 100)));
+  newRow.setString("Score", str(random(100, 300)));
+  saveTable(table, "data/"+file);
+  println("saved");
+}
+void retrieveDate() {
+  // sort the date in order of best score
+  table.sort("Score");
+  String HighScore = "";
+  for (TableRow row : table.rows()) {
+    println(row.getString("Name") + ": " + row.getString("Score"));
+    HighScore = row.getString("Name");
+  }
+  println("highest score is:"+HighScore);
+}
+void makeFile() {
+  table = new Table();
+  table.addColumn("Score");
+  table.addColumn("Name");
+  TableRow newRow = table.addRow();
+  newRow.setString("Name", "Luke_"+floor(random(0, 100)));
+  newRow.setString("Score", str(random(100, 300)));
+  saveTable(table, "data/"+file);
+}
+void mouseClicked() {
+  saveDate();
 }

@@ -14,6 +14,8 @@ import java.io.IOException;
 
 public class asimov extends PApplet {
 
+Table table;
+String file = "highscore.csv";
 Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Asteroid> asteroids;
@@ -34,6 +36,13 @@ final int gameOver = 2;
 public void setup() {
   
   
+  // Setting up highscore textfile
+  table = loadTable("data/"+file, "header");
+  if (table == null) {
+    makeFile(); // if there is no file yet, create a new one
+  } else {
+    retrieveDate();
+  }
   // Setting up the stars once, they don't need to be reloaded like the gameSetup
   for (int i = 0; i < width; i++) {
     stars.add(new Star());
@@ -164,12 +173,39 @@ public void keyReleased() { // without this, the ship only moves one time the ke
     keyRight = false;
   }
 }
+public void saveDate() {
+  // save a new score into the csv file
+  TableRow newRow = table.addRow();
+  newRow.setString("Name", "Luke_"+floor(random(0, 100)));
+  newRow.setString("Score", str(random(100, 300)));
+  saveTable(table, "data/"+file);
+  println("saved");
+}
+public void retrieveDate() {
+  // sort the date in order of best score
+  table.sort("Score");
+  String HighScore = "";
+  for (TableRow row : table.rows()) {
+    println(row.getString("Name") + ": " + row.getString("Score"));
+    HighScore = row.getString("Name");
+  }
+  println("highest score is:"+HighScore);
+}
+public void makeFile() {
+  table = new Table();
+  table.addColumn("Score");
+  table.addColumn("Name");
+  TableRow newRow = table.addRow();
+  newRow.setString("Name", "Luke_"+floor(random(0, 100)));
+  newRow.setString("Score", str(random(100, 300)));
+  saveTable(table, "data/"+file);
+}
+public void mouseClicked() {
+  saveDate();
+}
 class Asteroid {
-  PVector location;
-  PVector velocity;
-  PVector acceleration;
-  float mass;
-  float radius;
+  PVector location, velocity, acceleration;
+  float mass, radius;
 
   Asteroid(PVector location_, float m) {
     location = location_;
@@ -221,14 +257,8 @@ class Asteroid {
   }
 }
 class Ship {
-  PVector location;
-  PVector velocity;
-  PVector acceleration;
-  PVector pullBack;
-  float radius;
-  float damper;
-  float mass;
-  float g;
+  PVector location, velocity, acceleration, pullBack;
+  float radius, damper, mass, g;
 
   Ship(PVector location_) {
     location = location_;
@@ -299,9 +329,7 @@ class Ship {
 }
 // Based on William Smith's "Parallax"
 class Star {
-  PVector origin;
-  PVector location;
-  PVector angle;
+  PVector origin, location, angle;
   float size;
   int c;
 
