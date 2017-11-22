@@ -4,13 +4,16 @@ Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Asteroid> asteroids;
 
-
+boolean saveScoreToggle = false;
 boolean keyLeft = false;
 boolean keyRight = false;
 boolean keyUp = false;
 boolean keyDown = false;
+String HighName = "";
+String HighScore = "";
 
 int gameStatus = 0; // The integer stores status of the screen
+int score;
 
 // game constants
 final int startScreen = 0;
@@ -47,6 +50,7 @@ void draw() {
   }
 }
 void gameSetup() {
+  saveScoreToggle = false;
   ship = new Ship(new PVector(width/10, height/2));
   // Initialize asteroids
   asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
@@ -54,6 +58,7 @@ void gameSetup() {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
   }
+  score = 0;
 }
 void drawStartScreen() {
   background(0);
@@ -73,6 +78,14 @@ void drawGameOverScreen() {
   fill(255);
   textLeading(160);
   text("GAME OVER\nPRESS ENTER TO RESTART", width/2, height/2);
+  text("Your Score:",width/2,height/1.5);
+  text("last highscore"+HighName,width/2,height/1.2);
+  text(score,width/2+170,height/1.5);
+ if(!saveScoreToggle) {
+   saveDate("name");
+   saveScoreToggle = true;
+ }
+
 }
 void drawGame() {
   background(0);
@@ -118,6 +131,7 @@ void drawGame() {
     }
   }
   checkCollision();
+  score++;
 }
 void checkCollision() {
   for (int i = 0; i < asteroids.size(); i++) {
@@ -129,7 +143,10 @@ void checkCollision() {
   }
 }
 void keyPressed() {
-
+ //if (gameOver){
+//String name =name+ke;
+//
+ //}
   if (keyCode == UP  ||key == 'W'||key == 'w') {
     keyUp = true;
   }
@@ -157,10 +174,10 @@ void keyReleased() { // without this, the ship only moves one time the key is pr
     keyRight = false;
   }
 }
-void saveDate() {
+void saveDate(String name) {
   // save a new score into the csv file
   TableRow newRow = table.addRow();
-  newRow.setString("Name", "Luke_"+floor(random(0, 100)));
+  newRow.setString("Name", name);
   newRow.setString("Score", str(random(100, 300)));
   saveTable(table, "data/"+file);
   println("saved");
@@ -168,22 +185,20 @@ void saveDate() {
 void retrieveDate() {
   // sort the date in order of best score
   table.sort("Score");
-  String HighScore = "";
+
   for (TableRow row : table.rows()) {
     println(row.getString("Name") + ": " + row.getString("Score"));
-    HighScore = row.getString("Name");
+    HighName = row.getString("Name");
+      HighScore = row.getString("Score");
   }
-  println("highest score is:"+HighScore);
+  println("highest score is:"+HighScore+" from "+HighName);
 }
 void makeFile() {
   table = new Table();
   table.addColumn("Score");
   table.addColumn("Name");
   TableRow newRow = table.addRow();
-  newRow.setString("Name", "Luke_"+floor(random(0, 100)));
-  newRow.setString("Score", str(random(100, 300)));
-  saveTable(table, "data/"+file);
-}
-void mouseClicked() {
-  saveDate();
+//  newRow.setString("Name", name);
+  //newRow.setString("Score", str(random(100, 300)));
+//  saveTable(table, "data/"+file);
 }
