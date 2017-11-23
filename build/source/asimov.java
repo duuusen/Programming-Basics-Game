@@ -25,11 +25,11 @@ boolean keyLeft = false;
 boolean keyRight = false;
 boolean keyUp = false;
 boolean keyDown = false;
-String HighName = "";
 String HighScore = "";
 
 int gameStatus = 0; // The integer stores status of the screen
-int score;
+int gameScore;
+int gameScore_; // "placeholder" variable to convert the score from string to in
 
 // game constants
 final int startScreen = 0;
@@ -43,8 +43,6 @@ public void setup() {
   table = loadTable("data/"+file, "header");
   if (table == null) {
     makeFile(); // if there is no file yet, create a new one
-  } else {
-    retrieveDate();
   }
   // Setting up the stars once, they don't need to be reloaded like the gameSetup
   for (int i = 0; i < width; i++) {
@@ -74,7 +72,7 @@ public void gameSetup() {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
     asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
   }
-  score = 0;
+  gameScore = 0;
 }
 public void drawStartScreen() {
   background(0);
@@ -92,13 +90,17 @@ public void drawGameOverScreen() {
   textAlign(CENTER);
   textSize(40);
   fill(255);
-  textLeading(160);
-  text("GAME OVER\nPRESS ENTER TO RESTART", width/2, height/2);
-  text("Your Score:",width/2,height/1.5f);
-  text("last highscore"+HighName,width/2,height/1.2f);
-  text(score,width/2+170,height/1.5f);
+  text("GAME OVER", width/2, height/2.5f);
+  if (gameScore != retrieveData()) {
+    text("Your Score: "+gameScore,width/2,height/1.8f);
+    text("Highscore: "+retrieveData(),width/2,height/1.6f);
+  } else if (gameScore == retrieveData()) {
+    text("New HighScore! "+gameScore,width/2,height/1.8f);
+    // text(gameScore,width/2+150,height/1.5);
+  }
+  text("PRESS ENTER TO RESTART",width/2,height/1.2f);
  if(!saveScoreToggle) {
-   saveDate("name");
+   saveData(gameScore);
    saveScoreToggle = true;
  }
 
@@ -122,11 +124,21 @@ public void drawGame() {
   }
   // Asteroids
   for (Asteroid a: asteroids) {
-    PVector attractionForce = ship.attract(a);
-    PVector acceleration = new PVector(-0.3f,0);
+    PVector baseAcceleration = new PVector(-0.3f,0);
+    if (gameScore < 800) {
+      PVector acceleration = new PVector(-0.2f,0);
+      a.applyForce(acceleration);
+    } else if (gameScore > 1600 && gameScore < 1000) {
+      PVector acceleration = new PVector(-0.4f,0);
+      a.applyForce(acceleration);
+    } else if (gameScore > 2200) {
+      PVector acceleration = new PVector(-0.5f,0);
+      a.applyForce(acceleration);
+      PVector attractionForce = ship.attract(a);
+      a.applyForce(attractionForce);
+    }
     a.run();
-    a.applyForce(acceleration);
-    a.applyForce(attractionForce);
+
   }
   // Star Parallax
   for (Star s: stars) {
@@ -147,7 +159,8 @@ public void drawGame() {
     }
   }
   checkCollision();
-  score++;
+  gameScore++;
+  // println(gameScore);
 }
 public void checkCollision() {
   for (int i = 0; i < asteroids.size(); i++) {
@@ -190,29 +203,25 @@ public void keyReleased() { // without this, the ship only moves one time the ke
     keyRight = false;
   }
 }
-public void saveDate(String name) {
-  // save a new score into the csv file
+public void saveData(int gameScore) {
   TableRow newRow = table.addRow();
-  newRow.setString("Name", name);
-  newRow.setString("Score", str(random(100, 300)));
+  newRow.setString("Score", str(gameScore));
   saveTable(table, "data/"+file);
-  println("saved");
 }
-public void retrieveDate() {
+public int retrieveData() {
   // sort the date in order of best score
   table.sort("Score");
 
   for (TableRow row : table.rows()) {
-    println(row.getString("Name") + ": " + row.getString("Score"));
-    HighName = row.getString("Name");
-      HighScore = row.getString("Score");
+    HighScore = row.getString("Score");
   }
-  println("highest score is:"+HighScore+" from "+HighName);
+  gameScore_ = PApplet.parseInt(HighScore); // Convert from String to int
+  return gameScore_;
 }
 public void makeFile() {
   table = new Table();
   table.addColumn("Score");
-  table.addColumn("Name");
+  // table.addColumn("Name");
   TableRow newRow = table.addRow();
 //  newRow.setString("Name", name);
   //newRow.setString("Score", str(random(100, 300)));
