@@ -8,6 +8,7 @@ PFont font;
 Minim minim; //audio samples are kept in a buffer. They are suitable for shorter sounds
 AudioPlayer startupSound;
 AudioPlayer gameplaySound;
+AudioPlayer explosion;
 
 // The font must be located in the sketch's
 // "data" directory to load successfully
@@ -62,6 +63,9 @@ void gameSetup() {
   minim = new Minim(this);
   startupSound = minim.loadFile("data/startupSound.mp3");
   gameplaySound = minim.loadFile("data/gameplaySound.mp3");
+  explosion = minim.loadFile("data/explosion.wav");
+  gameplaySound.setGain(80);
+  gameplaySound.setGain(-50);
   saveScoreToggle = false;
   ship = new Ship(new PVector(width/10, height/2));
   // Initialize asteroids
@@ -84,6 +88,7 @@ void drawStartScreen() {
   text("PRESS ENTER TO START",width/2,height/1.5);
 }
 void drawGameOverScreen() {
+  explosion.play();
   background(0);
   textAlign(CENTER);
   textSize(40);
@@ -102,8 +107,12 @@ void drawGameOverScreen() {
   text("PRESS ENTER TO RESTART",width/2,height/1.2);
 }
 void drawGame() {
-  gameplaySound.play();
   background(0);
+  gameplaySound.play();
+  if (gameplaySound.position() == gameplaySound.length()) {
+    gameplaySound.rewind();
+    gameplaySound.play();
+  }
   // Ship
   ship.run();
   float shipAcceleration = 0.5;
