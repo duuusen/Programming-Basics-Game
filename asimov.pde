@@ -131,13 +131,13 @@ void drawGame() {
   }
   // Asteroids
   for (Asteroid a: asteroids) {
-    PVector baseAcceleration = new PVector(-0.5,0);
+    PVector baseAcceleration = new PVector(-0.2,0);
       if (gameScore > 800 && gameScore < 1600) {
-      PVector addAcceleration = new PVector(-0.7,0);
+      PVector addAcceleration = new PVector(-0.3,0);
       baseAcceleration.mult(0);
       baseAcceleration.add(addAcceleration);
     } else if (gameScore > 1600 && gameScore < 2200) {
-      PVector addAcceleration = new PVector(-0.9,0);
+      PVector addAcceleration = new PVector(-0.5,0);
       baseAcceleration.mult(0);
       baseAcceleration.add(addAcceleration);
     } else if (gameScore > 2200) {

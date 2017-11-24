@@ -149,13 +149,15 @@ public void drawGame() {
   }
   // Asteroids
   for (Asteroid a: asteroids) {
-    PVector baseAcceleration = new PVector(-0.5f,0);
+    PVector baseAcceleration = new PVector(-0.2f,0);
       if (gameScore > 800 && gameScore < 1600) {
-      PVector addAcceleration = new PVector(-0.7f,0);
+      PVector addAcceleration = new PVector(-0.3f,0);
       baseAcceleration.mult(0);
       baseAcceleration.add(addAcceleration);
+      PVector attractionForce = ship.attract(a);
+      a.applyForce(attractionForce);
     } else if (gameScore > 1600 && gameScore < 2200) {
-      PVector addAcceleration = new PVector(-0.9f,0);
+      PVector addAcceleration = new PVector(-0.5f,0);
       baseAcceleration.mult(0);
       baseAcceleration.add(addAcceleration);
     } else if (gameScore > 2200) {
@@ -460,7 +462,7 @@ class Star {
 }
   public void settings() {  fullScreen(P3D);  smooth(); }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "asimov" };
+    String[] appletArgs = new String[] { "--present", "--window-color=#666666", "--stop-color=#cccccc", "asimov" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
