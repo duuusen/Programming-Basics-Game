@@ -1,8 +1,16 @@
+import ddf.minim.*;
 Table table;
 String file = "highscore.csv";
 Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Asteroid> asteroids;
+PFont font;
+Minim minim; //audio samples are kept in a buffer. They are suitable for shorter sounds
+AudioPlayer startupSound;
+AudioPlayer gameplaySound;
+
+// The font must be located in the sketch's
+// "data" directory to load successfully
 
 boolean saveScoreToggle = false;
 boolean keyLeft = false;
@@ -34,8 +42,10 @@ void setup() {
     stars.add(new Star());
   }
   gameSetup();
+  font = createFont("robotoMonoMedium.ttf", 32);
 }
 void draw() {
+  textFont(font);
   switch(gameStatus) {
     case startScreen:
       drawStartScreen();
@@ -49,17 +59,21 @@ void draw() {
   }
 }
 void gameSetup() {
+  minim = new Minim(this);
+  startupSound = minim.loadFile("data/startupSound.mp3");
+  gameplaySound = minim.loadFile("data/gameplaySound.mp3");
   saveScoreToggle = false;
   ship = new Ship(new PVector(width/10, height/2));
   // Initialize asteroids
   asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
-    asteroids.add(new Asteroid(asteroidLocation,random(10,20)));
+    asteroids.add(new Asteroid(asteroidLocation,random(8,17)));
   }
   gameScore = 0;
 }
 void drawStartScreen() {
+  startupSound.play();
   background(0);
   textAlign(CENTER);
   textSize(40);
@@ -88,6 +102,7 @@ void drawGameOverScreen() {
   text("PRESS ENTER TO RESTART",width/2,height/1.2);
 }
 void drawGame() {
+  gameplaySound.play();
   background(0);
   // Ship
   ship.run();
@@ -165,6 +180,7 @@ void keyPressed() {
   }
   if (keyCode == RIGHT || key == 'D'|| key== 'd') {
     keyRight = true;
+    gameScore += 10;
   }
   if (key == ENTER) {
     if (gameStatus != playingGame) {

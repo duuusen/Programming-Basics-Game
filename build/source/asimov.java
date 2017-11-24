@@ -3,6 +3,8 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import ddf.minim.*; 
+
 import java.util.HashMap; 
 import java.util.ArrayList; 
 import java.io.File; 
@@ -14,11 +16,19 @@ import java.io.IOException;
 
 public class asimov extends PApplet {
 
+
 Table table;
 String file = "highscore.csv";
 Ship ship;
 ArrayList<Star> stars = new ArrayList<Star>();
 ArrayList<Asteroid> asteroids;
+PFont font;
+Minim minim; //audio samples are kept in a buffer. They are suitable for shorter sounds
+AudioPlayer startupSound;
+AudioPlayer gameplaySound;
+
+// The font must be located in the sketch's
+// "data" directory to load successfully
 
 boolean saveScoreToggle = false;
 boolean keyLeft = false;
@@ -50,8 +60,10 @@ public void setup() {
     stars.add(new Star());
   }
   gameSetup();
+  font = createFont("robotoMonoMedium.ttf", 32);
 }
 public void draw() {
+  textFont(font);
   switch(gameStatus) {
     case startScreen:
       drawStartScreen();
@@ -65,17 +77,21 @@ public void draw() {
   }
 }
 public void gameSetup() {
+  minim = new Minim(this);
+  startupSound = minim.loadFile("data/startupSound.mp3");
+  gameplaySound = minim.loadFile("data/gameplaySound.mp3");
   saveScoreToggle = false;
   ship = new Ship(new PVector(width/10, height/2));
   // Initialize asteroids
   asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
-    asteroids.add(new Asteroid(asteroidLocation,random(10,20)));
+    asteroids.add(new Asteroid(asteroidLocation,random(8,17)));
   }
   gameScore = 0;
 }
 public void drawStartScreen() {
+  startupSound.play();
   background(0);
   textAlign(CENTER);
   textSize(40);
@@ -104,6 +120,8 @@ public void drawGameOverScreen() {
   text("PRESS ENTER TO RESTART",width/2,height/1.2f);
 }
 public void drawGame() {
+  startupSound.pause();
+  gameplaySound.play();
   background(0);
   // Ship
   ship.run();
@@ -181,6 +199,7 @@ public void keyPressed() {
   }
   if (keyCode == RIGHT || key == 'D'|| key== 'd') {
     keyRight = true;
+    gameScore += 10;
   }
   if (key == ENTER) {
     if (gameStatus != playingGame) {
@@ -395,13 +414,13 @@ class Ship {
 class Star {
   PVector origin, location, angle;
   float size;
-  int c;
+  //color c; // Just brightness/monochromatic looks better
 
   Star() {
     // Ship Movement Vector controlling the parallax effect
     origin = new PVector(width / 10, height / 2); // Sets point of origin. Calculating distance and angle from that point will determine parallax effect
     size = random(0.1f,3);
-    c = color(random(200,255),random(200,255),random(200,255));
+    //c = color(random(200,255),random(200,255),random(200,255));
     location = new PVector(random(width * map(size, 1, 7, 7, 1)), random(height * map(size, 1, 7, 7, 1)));
 
   }
@@ -421,7 +440,7 @@ class Star {
   }
   public void display() {
     pushStyle();
-      stroke(c);
+      stroke(random(150,255));
       strokeWeight(size);
       int x = (int) ((location.x - origin.x) * size / 8) % width; // the bigger stars move faster than the small ones, creating the parallax effect
       int y = (int) ((location.y - origin.y) * size / 8) % height;
