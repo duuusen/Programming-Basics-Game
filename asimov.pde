@@ -13,7 +13,7 @@ String HighScore = "";
 
 int gameStatus = 0; // The integer stores status of the screen
 int gameScore;
-int gameScore_; // "placeholder" variable to convert the score from string to in
+int highScore_; // "placeholder" variable to convert the score from string to in
 
 // game constants
 final int startScreen = 0;
@@ -21,7 +21,8 @@ final int playingGame = 1;
 final int gameOver = 2;
 
 void setup() {
-  size(1200,700);
+  fullScreen(P3D);
+  //size(1200,700,P3D);
   smooth();
   // Setting up highscore textfile
   table = loadTable("data/"+file, "header");
@@ -54,7 +55,7 @@ void gameSetup() {
   asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
-    asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
+    asteroids.add(new Asteroid(asteroidLocation,random(10,20)));
   }
   gameScore = 0;
 }
@@ -68,26 +69,23 @@ void drawStartScreen() {
   textSize(46);
   text("PRESS ENTER TO START",width/2,height/1.5);
 }
-
 void drawGameOverScreen() {
   background(0);
   textAlign(CENTER);
   textSize(40);
   fill(255);
   text("GAME OVER", width/2, height/2.5);
+  if(!saveScoreToggle) {
+    saveData(gameScore);
+    saveScoreToggle = true;
+  }
   if (gameScore != retrieveData()) {
     text("Your Score: "+gameScore,width/2,height/1.8);
     text("Highscore: "+retrieveData(),width/2,height/1.6);
   } else if (gameScore == retrieveData()) {
     text("New HighScore! "+gameScore,width/2,height/1.8);
-    // text(gameScore,width/2+150,height/1.5);
   }
   text("PRESS ENTER TO RESTART",width/2,height/1.2);
- if(!saveScoreToggle) {
-   saveData(gameScore);
-   saveScoreToggle = true;
- }
-
 }
 void drawGame() {
   background(0);
@@ -105,24 +103,28 @@ void drawGame() {
   if (keyRight) {
     PVector forward = new PVector(shipAcceleration+1,0); // +1 because the forward force needs to be stronger than the pullBack force
     ship.applyForce(forward);
+    ship.drawTail();
   }
   // Asteroids
   for (Asteroid a: asteroids) {
-    PVector baseAcceleration = new PVector(-0.3,0);
-    if (gameScore < 800) {
-      PVector acceleration = new PVector(-0.2,0);
-      a.applyForce(acceleration);
-    } else if (gameScore > 1600 && gameScore < 1000) {
-      PVector acceleration = new PVector(-0.4,0);
-      a.applyForce(acceleration);
+    PVector baseAcceleration = new PVector(-0.5,0);
+      if (gameScore > 800 && gameScore < 1600) {
+      PVector addAcceleration = new PVector(-0.7,0);
+      baseAcceleration.mult(0);
+      baseAcceleration.add(addAcceleration);
+    } else if (gameScore > 1600 && gameScore < 2200) {
+      PVector addAcceleration = new PVector(-0.9,0);
+      baseAcceleration.mult(0);
+      baseAcceleration.add(addAcceleration);
     } else if (gameScore > 2200) {
-      PVector acceleration = new PVector(-0.5,0);
-      a.applyForce(acceleration);
+      PVector addAcceleration = new PVector(-0.4,0);
+      baseAcceleration.mult(0);
+      baseAcceleration.add(addAcceleration);
       PVector attractionForce = ship.attract(a);
       a.applyForce(attractionForce);
     }
     a.run();
-
+    a.applyForce(baseAcceleration);
   }
   // Star Parallax
   for (Star s: stars) {
@@ -144,7 +146,6 @@ void drawGame() {
   }
   checkCollision();
   gameScore++;
-  // println(gameScore);
 }
 void checkCollision() {
   for (int i = 0; i < asteroids.size(); i++) {
@@ -156,10 +157,6 @@ void checkCollision() {
   }
 }
 void keyPressed() {
- //if (gameOver){
-//String name =name+ke;
-//
- //}
   if (keyCode == UP  ||key == 'W'||key == 'w') {
     keyUp = true;
   }
@@ -194,13 +191,18 @@ void saveData(int gameScore) {
 }
 int retrieveData() {
   // sort the date in order of best score
-  table.sort("Score");
-
+  //table.sort("Score");
+int[] tempArray = new int[table.getRowCount()];
+int i = 0;
   for (TableRow row : table.rows()) {
     HighScore = row.getString("Score");
+    tempArray[i] = PApplet.parseInt(HighScore);
+      i++;
   }
-  gameScore_ = PApplet.parseInt(HighScore); // Convert from String to int
-  return gameScore_;
+  tempArray =   sort(tempArray);
+  //  println(tempArray[tempArray.length-1]);
+//  highScore_ = PApplet.parseInt(HighScore); // Convert from String to int
+  return tempArray[tempArray.length-1];
 }
 void makeFile() {
   table = new Table();

@@ -1,5 +1,6 @@
 class Ship {
   PVector location, velocity, acceleration, pullBack;
+  PImage spaceship, flame;
   float radius, damper, mass, g;
 
   Ship(PVector location_) {
@@ -7,10 +8,12 @@ class Ship {
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
-    radius = 25;
+    radius = 50;
     damper = 0.95;
     mass = 60;
-    g = 0.4; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
+    g = 0.1; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
+    spaceship = loadImage("spaceship.png");
+    flame = loadImage("flame.png");
   }
   void run() {
     update();
@@ -60,12 +63,30 @@ class Ship {
   }
   void collision() {
     fill(255,0,0);
-    ellipse(location.x, location.y, 100, 100);
+    pushMatrix();
+      translate(location.x,location.y,10);
+      ellipse(0, 0, radius*2.5, radius*2.5);
+    popMatrix();
   }
   void display() {
-    stroke(0);
-    fill(175,70);
+    noStroke();
+    fill(0,100);
     rectMode(CENTER); // so that collision detection works properly, because it assumes that the rectangle is a ellipse for checking collision
-    rect(location.x,location.y,radius*2,radius*2);
+    imageMode(CENTER);
+    pushMatrix();
+      translate(location.x,location.y,5); // translating ship so that it is above the stars
+      image(spaceship,0,0,radius*2,radius*2);
+    popMatrix();
+  }
+  void drawTail() {
+    int alternator = int(location.x + location.y);
+    alternator = alternator%2; // Finds the equal division and gives the remaining sum. Its a value that alternates between 0 and 1. Modulo symbol %, finds the remainder when one number is divided by another
+    if (alternator == 0) { // if the alternator is zero, draw the rocket tale
+      pushMatrix();
+      translate(location.x, location.y);
+      translate(-radius*2.05, -20);
+      image(flame,0,0,80,40);
+      popMatrix();
+    }
   }
 }

@@ -29,7 +29,7 @@ String HighScore = "";
 
 int gameStatus = 0; // The integer stores status of the screen
 int gameScore;
-int gameScore_; // "placeholder" variable to convert the score from string to in
+int highScore_; // "placeholder" variable to convert the score from string to in
 
 // game constants
 final int startScreen = 0;
@@ -38,6 +38,7 @@ final int gameOver = 2;
 
 public void setup() {
   
+  //size(1200,700,P3D);
   
   // Setting up highscore textfile
   table = loadTable("data/"+file, "header");
@@ -70,7 +71,7 @@ public void gameSetup() {
   asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
-    asteroids.add(new Asteroid(asteroidLocation,random(5,25)));
+    asteroids.add(new Asteroid(asteroidLocation,random(10,20)));
   }
   gameScore = 0;
 }
@@ -84,26 +85,23 @@ public void drawStartScreen() {
   textSize(46);
   text("PRESS ENTER TO START",width/2,height/1.5f);
 }
-
 public void drawGameOverScreen() {
   background(0);
   textAlign(CENTER);
   textSize(40);
   fill(255);
   text("GAME OVER", width/2, height/2.5f);
+  if(!saveScoreToggle) {
+    saveData(gameScore);
+    saveScoreToggle = true;
+  }
   if (gameScore != retrieveData()) {
     text("Your Score: "+gameScore,width/2,height/1.8f);
     text("Highscore: "+retrieveData(),width/2,height/1.6f);
   } else if (gameScore == retrieveData()) {
     text("New HighScore! "+gameScore,width/2,height/1.8f);
-    // text(gameScore,width/2+150,height/1.5);
   }
   text("PRESS ENTER TO RESTART",width/2,height/1.2f);
- if(!saveScoreToggle) {
-   saveData(gameScore);
-   saveScoreToggle = true;
- }
-
 }
 public void drawGame() {
   background(0);
@@ -121,24 +119,28 @@ public void drawGame() {
   if (keyRight) {
     PVector forward = new PVector(shipAcceleration+1,0); // +1 because the forward force needs to be stronger than the pullBack force
     ship.applyForce(forward);
+    ship.drawTail();
   }
   // Asteroids
   for (Asteroid a: asteroids) {
-    PVector baseAcceleration = new PVector(-0.3f,0);
-    if (gameScore < 800) {
-      PVector acceleration = new PVector(-0.2f,0);
-      a.applyForce(acceleration);
-    } else if (gameScore > 1600 && gameScore < 1000) {
-      PVector acceleration = new PVector(-0.4f,0);
-      a.applyForce(acceleration);
+    PVector baseAcceleration = new PVector(-0.5f,0);
+      if (gameScore > 800 && gameScore < 1600) {
+      PVector addAcceleration = new PVector(-0.7f,0);
+      baseAcceleration.mult(0);
+      baseAcceleration.add(addAcceleration);
+    } else if (gameScore > 1600 && gameScore < 2200) {
+      PVector addAcceleration = new PVector(-0.9f,0);
+      baseAcceleration.mult(0);
+      baseAcceleration.add(addAcceleration);
     } else if (gameScore > 2200) {
-      PVector acceleration = new PVector(-0.5f,0);
-      a.applyForce(acceleration);
+      PVector addAcceleration = new PVector(-0.4f,0);
+      baseAcceleration.mult(0);
+      baseAcceleration.add(addAcceleration);
       PVector attractionForce = ship.attract(a);
       a.applyForce(attractionForce);
     }
     a.run();
-
+    a.applyForce(baseAcceleration);
   }
   // Star Parallax
   for (Star s: stars) {
@@ -160,7 +162,6 @@ public void drawGame() {
   }
   checkCollision();
   gameScore++;
-  // println(gameScore);
 }
 public void checkCollision() {
   for (int i = 0; i < asteroids.size(); i++) {
@@ -172,10 +173,6 @@ public void checkCollision() {
   }
 }
 public void keyPressed() {
- //if (gameOver){
-//String name =name+ke;
-//
- //}
   if (keyCode == UP  ||key == 'W'||key == 'w') {
     keyUp = true;
   }
@@ -210,13 +207,18 @@ public void saveData(int gameScore) {
 }
 public int retrieveData() {
   // sort the date in order of best score
-  table.sort("Score");
-
+  //table.sort("Score");
+int[] tempArray = new int[table.getRowCount()];
+int i = 0;
   for (TableRow row : table.rows()) {
     HighScore = row.getString("Score");
+    tempArray[i] = PApplet.parseInt(HighScore);
+      i++;
   }
-  gameScore_ = PApplet.parseInt(HighScore); // Convert from String to int
-  return gameScore_;
+  tempArray =   sort(tempArray);
+  //  println(tempArray[tempArray.length-1]);
+//  highScore_ = PApplet.parseInt(HighScore); // Convert from String to int
+  return tempArray[tempArray.length-1];
 }
 public void makeFile() {
   table = new Table();
@@ -229,7 +231,8 @@ public void makeFile() {
 }
 class Asteroid {
   PVector location, velocity, acceleration;
-  float mass, radius;
+  PImage asteroidP;
+  float mass, radius, angle, aAcceleration, aVelocity;
 
   Asteroid(PVector location_, float m) {
     location = location_;
@@ -237,6 +240,9 @@ class Asteroid {
     acceleration = new PVector(0,0);
     mass = m; // Order has to be right! The passed value is always on the right side of the equation.
     radius = mass*2;
+    aVelocity = 0;
+    aAcceleration = 0;
+    asteroidP = loadImage("asteroid_3.png");
   }
   public void run() {
     update();
@@ -252,6 +258,11 @@ class Asteroid {
     location.add(velocity);
     acceleration.mult(0); // Resetting acceleration, very important!!!111!11!1!
     // println(velocity);
+
+    aAcceleration = velocity.x / 300.0f; // Rotates according to the x velocity
+    aVelocity += aAcceleration;
+    angle += aAcceleration;
+    aAcceleration *= 0; // Reset
   }
   public void checkEdges() {
     if (location.x + radius < 0) {
@@ -262,7 +273,10 @@ class Asteroid {
   }
   public void collision() {
     fill(255,0,0);
-    ellipse(location.x, location.y, 60, 60); // ellipse slightly bigger than asteroid itself
+    pushMatrix();
+      translate(location.x,location.y);
+      ellipse(0, 0, radius*2.2f, radius*2.2f); // ellipse slightly bigger than asteroid itself
+    popMatrix();
   }
   public boolean checkCollision(Ship ship) {
     // Circle Collision Detection
@@ -276,12 +290,18 @@ class Asteroid {
     }
   }
   public void display() {
-    fill(255);
-    ellipse(location.x,location.y,2*radius,2*radius);
+    // ellipse(location.x,location.y,2*radius,2*radius);
+    imageMode(CENTER);
+    pushMatrix();
+      translate(location.x,location.y,10); // translating explosion ellipse so that it is on the first "layer"
+      rotate(angle);
+      image(asteroidP,0,0,2*radius,2*radius);
+    popMatrix();
   }
 }
 class Ship {
   PVector location, velocity, acceleration, pullBack;
+  PImage spaceship, flame;
   float radius, damper, mass, g;
 
   Ship(PVector location_) {
@@ -289,10 +309,12 @@ class Ship {
     velocity = new PVector(0,0);
     acceleration = new PVector(0,0);
     pullBack = new PVector(-1,0);
-    radius = 25;
+    radius = 50;
     damper = 0.95f;
     mass = 60;
-    g = 0.4f; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
+    g = 0.1f; // Gravitational constant 'g'. Increase value here to make the attraction force stronger
+    spaceship = loadImage("spaceship.png");
+    flame = loadImage("flame.png");
   }
   public void run() {
     update();
@@ -342,13 +364,31 @@ class Ship {
   }
   public void collision() {
     fill(255,0,0);
-    ellipse(location.x, location.y, 100, 100);
+    pushMatrix();
+      translate(location.x,location.y,10);
+      ellipse(0, 0, radius*2.5f, radius*2.5f);
+    popMatrix();
   }
   public void display() {
-    stroke(0);
-    fill(175,70);
+    noStroke();
+    fill(0,100);
     rectMode(CENTER); // so that collision detection works properly, because it assumes that the rectangle is a ellipse for checking collision
-    rect(location.x,location.y,radius*2,radius*2);
+    imageMode(CENTER);
+    pushMatrix();
+      translate(location.x,location.y,5); // translating ship so that it is above the stars
+      image(spaceship,0,0,radius*2,radius*2);
+    popMatrix();
+  }
+  public void drawTail() {
+    int alternator = PApplet.parseInt(location.x + location.y);
+    alternator = alternator%2; // Finds the equal division and gives the remaining sum. Its a value that alternates between 0 and 1. Modulo symbol %, finds the remainder when one number is divided by another
+    if (alternator == 0) { // if the alternator is zero, draw the rocket tale
+      pushMatrix();
+      translate(location.x, location.y);
+      translate(-radius*2.05f, -20);
+      image(flame,0,0,80,40);
+      popMatrix();
+    }
   }
 }
 // Based on William Smith's "Parallax"
@@ -391,7 +431,7 @@ class Star {
     popStyle();
   }
 }
-  public void settings() {  size(1200,700);  smooth(); }
+  public void settings() {  fullScreen(P3D);  smooth(); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "asimov" };
     if (passedArgs != null) {
