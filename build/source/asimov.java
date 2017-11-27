@@ -90,7 +90,7 @@ public void gameSetup() {
   asteroids = new ArrayList<Asteroid>(); // This was the missing line of code. Before, the array was created above setup(), now a new array is created everytime the game reloads
   for (int i = 0; i < 6; i++) {
     PVector asteroidLocation = new PVector(random(width+50,width+500),random(height)); // Initialize asteroids outside the screen and let them fly in
-    asteroids.add(new Asteroid(asteroidLocation,random(8,17)));
+    asteroids.add(new Asteroid(asteroidLocation,random(100)));
   }
   gameScore = 0;
 }
@@ -154,8 +154,6 @@ public void drawGame() {
       PVector addAcceleration = new PVector(-0.3f,0);
       baseAcceleration.mult(0);
       baseAcceleration.add(addAcceleration);
-      PVector attractionForce = ship.attract(a);
-      a.applyForce(attractionForce);
     } else if (gameScore > 1600 && gameScore < 2200) {
       PVector addAcceleration = new PVector(-0.5f,0);
       baseAcceleration.mult(0);
