@@ -1,16 +1,14 @@
 // Based on William Smith's "Parallax"
 class Star {
-  PVector origin;
-  PVector location;
-  PVector angle;
+  PVector origin, location, angle;
   float size;
-  color c;
+  //color c; // Just brightness/monochromatic looks better
 
   Star() {
     // Ship Movement Vector controlling the parallax effect
     origin = new PVector(width / 10, height / 2); // Sets point of origin. Calculating distance and angle from that point will determine parallax effect
     size = random(0.1,3);
-    c = color(random(200,255),random(200,255),random(200,255));
+    //c = color(random(200,255),random(200,255),random(200,255));
     location = new PVector(random(width * map(size, 1, 7, 7, 1)), random(height * map(size, 1, 7, 7, 1)));
 
   }
@@ -30,7 +28,7 @@ class Star {
   }
   void display() {
     pushStyle();
-      stroke(c);
+      stroke(random(150,255));
       strokeWeight(size);
       int x = (int) ((location.x - origin.x) * size / 8) % width; // the bigger stars move faster than the small ones, creating the parallax effect
       int y = (int) ((location.y - origin.y) * size / 8) % height;

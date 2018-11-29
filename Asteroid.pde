@@ -1,9 +1,7 @@
 class Asteroid {
-  PVector location;
-  PVector velocity;
-  PVector acceleration;
-  float mass;
-  float radius;
+  PVector location, velocity, acceleration;
+  PImage asteroidP;
+  float mass, radius, angle, aAcceleration, aVelocity;
 
   Asteroid(PVector location_, float m) {
     location = location_;
@@ -11,6 +9,9 @@ class Asteroid {
     acceleration = new PVector(0,0);
     mass = m; // Order has to be right! The passed value is always on the right side of the equation.
     radius = mass*2;
+    aVelocity = 0;
+    aAcceleration = 0;
+    asteroidP = loadImage("asteroid_3.png");
   }
   void run() {
     update();
@@ -26,6 +27,11 @@ class Asteroid {
     location.add(velocity);
     acceleration.mult(0); // Resetting acceleration, very important!!!111!11!1!
     // println(velocity);
+
+    aAcceleration = velocity.x / 300.0; // Rotates according to the x velocity
+    aVelocity += aAcceleration;
+    angle += aAcceleration;
+    aAcceleration *= 0; // Reset
   }
   void checkEdges() {
     if (location.x + radius < 0) {
@@ -36,7 +42,10 @@ class Asteroid {
   }
   void collision() {
     fill(255,0,0);
-    ellipse(location.x, location.y, 60, 60); // ellipse slightly bigger than asteroid itself
+    pushMatrix();
+      translate(location.x,location.y);
+      ellipse(0, 0, radius*2.2, radius*2.2); // ellipse slightly bigger than asteroid itself
+    popMatrix();
   }
   boolean checkCollision(Ship ship) {
     // Circle Collision Detection
@@ -50,7 +59,12 @@ class Asteroid {
     }
   }
   void display() {
-    fill(255);
-    ellipse(location.x,location.y,2*radius,2*radius);
+    // ellipse(location.x,location.y,2*radius,2*radius);
+    imageMode(CENTER);
+    pushMatrix();
+      translate(location.x,location.y,10); // translating explosion ellipse so that it is on the first "layer"
+      rotate(angle);
+      image(asteroidP,0,0,2*radius,2*radius);
+    popMatrix();
   }
 }
